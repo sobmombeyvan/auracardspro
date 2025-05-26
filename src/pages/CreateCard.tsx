@@ -75,13 +75,8 @@ const CreateCard = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Le nom est requis';
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = 'L\'email est requis';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // Validation de format uniquement si le champ est rempli
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Format d\'email invalide';
     }
     
@@ -287,15 +282,6 @@ const CreateCard = () => {
   };
   
   const saveCard = async () => {
-    if (!validateForm()) {
-      toast({
-        title: "Erreur de validation",
-        description: "Veuillez corriger les erreurs dans le formulaire",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
       // Check if user is authenticated
       const { data: session } = await supabase.auth.getSession();
@@ -319,15 +305,15 @@ const CreateCard = () => {
         .from('business_cards')
         .insert({
           user_id: userId,
-          name: formData.name,
-          title: formData.title,
-          email: formData.email,
-          phone: formData.phone,
-          location: formData.location,
-          website: formData.website,
-          bio: formData.bio,
-          photo_url: formData.photo,
-          logo_url: formData.logo,
+          name: formData.name || '',
+          title: formData.title || '',
+          email: formData.email || '',
+          phone: formData.phone || '',
+          location: formData.location || '',
+          website: formData.website || '',
+          bio: formData.bio || '',
+          photo_url: formData.photo || '',
+          logo_url: formData.logo || '',
           template: formData.variant,
           published: true
         })
