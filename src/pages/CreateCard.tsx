@@ -391,7 +391,7 @@ const CreateCard = () => {
         description: "Votre carte a été créée avec succès",
       });
       
-      navigate(`/card/${cardData.id}`);
+      navigate(`/c/${cardData.slug}`);
       
     } catch (error: any) {
       console.error('Error saving card:', error);

@@ -50,6 +50,7 @@ const ViewCard = () => {
       try {
         console.log('Current URL:', window.location.href);
         console.log('Slug from params:', slugParam);
+        console.log('Attempting to fetch card with slug:', slugParam);
 
         if (!slugParam) {
           console.error('No slug found in URL');
@@ -58,114 +59,47 @@ const ViewCard = () => {
           return;
         }
 
-        // First, let's check if the card exists with this slug
+        // Try to find the card by slug first
         let { data: cardData, error: cardError } = await supabase
           .from('business_cards')
           .select('*')
           .eq('slug', slugParam)
+          .eq('published', true)
           .single();
 
-        console.log('Supabase response for slug search:', { cardData, cardError });
-
-        if (cardError) {
-          console.error('Supabase error:', cardError);
-          
-          // If no card found with this slug, try to find it by ID
-          if (cardError.code === 'PGRST116') {
-            console.log('No card found with slug, trying to find by ID...');
-            
-            // First, let's check if this is a valid UUID
-            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugParam);
-            
-            if (!isUUID) {
-              console.log('Not a valid UUID, checking if it might be a name...');
-              // Try to find by name (case insensitive)
-              const { data: cardByName, error: nameError } = await supabase
-                .from('business_cards')
-                .select('*')
-                .ilike('name', `%${slugParam}%`)
-                .single();
-
-              console.log('Card by name response:', { cardByName, nameError });
-
-              if (nameError) {
-                // Let's try to find any card that might have a similar slug
-                console.log('Trying to find any card with a similar slug...');
-                const { data: similarCards, error: similarError } = await supabase
-                  .from('business_cards')
-                  .select('*')
-                  .ilike('slug', `%${slugParam}%`);
-
-                console.log('Similar cards response:', { similarCards, similarError });
-
-                if (similarError || !similarCards || similarCards.length === 0) {
-                  throw new Error('Carte non trouvée');
-                }
-
-                // Use the first similar card found
-                cardData = similarCards[0];
-              } else if (cardByName) {
-                // Generate a slug from the name
-                const baseSlug = cardByName.name
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/(^-|-$)/g, '');
-                const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 8)}`;
-
-                // Update the card with the new slug
-                const { error: updateError } = await supabase
-                  .from('business_cards')
-                  .update({ slug: uniqueSlug })
-                  .eq('id', cardByName.id);
-
-                if (updateError) {
-                  console.error('Error updating slug:', updateError);
-                }
-
-                cardData = { ...cardByName, slug: uniqueSlug };
-              }
-            } else {
-              // Try to find by ID
-              const { data: cardById, error: idError } = await supabase
-                .from('business_cards')
-                .select('*')
-                .eq('id', slugParam)
-                .single();
-
-              console.log('Card by ID response:', { cardById, idError });
-
-              if (idError) {
-                throw new Error('Carte non trouvée');
-              }
-
-              if (cardById) {
-                // Generate a slug from the name
-                const baseSlug = cardById.name
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/(^-|-$)/g, '');
-                const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 8)}`;
-
-                // Update the card with the new slug
-                const { error: updateError } = await supabase
-                  .from('business_cards')
-                  .update({ slug: uniqueSlug })
-                  .eq('id', cardById.id);
-
-                if (updateError) {
-                  console.error('Error updating slug:', updateError);
-                }
-
-                cardData = { ...cardById, slug: uniqueSlug };
-              }
-            }
-          } else {
-            throw cardError;
+        console.log('Raw query result:', { cardData, cardError });
+        console.log('Query details:', {
+          table: 'business_cards',
+          filters: {
+            slug: slugParam,
+            published: true
           }
+        });
+
+        // If not found by slug, try to find by ID
+        if (cardError && cardError.code === 'PGRST116') {
+          console.log('Card not found by slug, trying by ID');
+          const { data: cardById, error: idError } = await supabase
+            .from('business_cards')
+            .select('*')
+            .eq('id', slugParam)
+            .eq('published', true)
+            .single();
+
+          console.log('Search by ID result:', { cardById, idError });
+
+          if (idError) {
+            console.error('Error searching by ID:', idError);
+            throw new Error('Carte non trouvée');
+          }
+
+          cardData = cardById;
+        } else if (cardError) {
+          console.error('Error searching by slug:', cardError);
+          throw cardError;
         }
-        
+
         if (!cardData) {
-          console.error('No data found for slug:', slugParam);
           throw new Error('Carte non trouvée');
         }
 
@@ -182,7 +116,7 @@ const ViewCard = () => {
           template: cardData.template,
           published: true, // Force published to true for public access
           slug: cardData.slug,
-          location: null,
+          location: cardData.location || null,
           theme: (cardData.template as BusinessCard['theme']) || 'default',
           socials: [],
           portfolioItems: []
