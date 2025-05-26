@@ -59,6 +59,15 @@ const ViewCard = () => {
           return;
         }
 
+        // First, check if the card exists at all
+        const { data: allCards, error: listError } = await supabase
+          .from('business_cards')
+          .select('id, slug, published')
+          .eq('slug', slugParam);
+
+        console.log('All cards with this slug:', allCards);
+        console.log('List error:', listError);
+
         // Try to find the card by slug first
         let { data: cardData, error: cardError } = await supabase
           .from('business_cards')
@@ -75,6 +84,15 @@ const ViewCard = () => {
             published: true
           }
         });
+
+        if (cardError) {
+          console.error('Error details:', {
+            code: cardError.code,
+            message: cardError.message,
+            details: cardError.details,
+            hint: cardError.hint
+          });
+        }
 
         // If not found by slug, try to find by ID
         if (cardError && cardError.code === 'PGRST116') {
@@ -100,6 +118,7 @@ const ViewCard = () => {
         }
 
         if (!cardData) {
+          console.error('No card data found after all attempts');
           throw new Error('Carte non trouvée');
         }
 
