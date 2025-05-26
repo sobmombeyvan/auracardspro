@@ -139,8 +139,17 @@ const AdminDashboard = () => {
   };
 
   const handleShareCard = async (id: string) => {
-    const url = `${window.location.origin}/card/${id}`;
     try {
+      const { data: card, error } = await supabase
+        .from('business_cards')
+        .select('slug')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      if (!card) throw new Error('Card not found');
+
+      const url = `${window.location.origin}/c/${card.slug}`;
       await navigator.clipboard.writeText(url);
       toast({
         title: "Lien copié",
@@ -287,7 +296,7 @@ const AdminDashboard = () => {
                       </td>
                       <td className="p-3">
                         <div className="flex space-x-2">
-                          <Link to={`/card/${card.id}`}>
+                          <Link to={`/c/${card.slug}`}>
                             <Button size="sm" variant="outline" className="border-white/20 text-white">
                               <Eye size={14} />
                             </Button>
