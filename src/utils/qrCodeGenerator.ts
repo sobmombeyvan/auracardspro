@@ -7,24 +7,19 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export const generateQRCode = async (cardId: string): Promise<string> => {
   try {
-    // First, get the card's slug from the database
+    // Get the card's slug from the database
     const { data: card, error } = await supabase
       .from('business_cards')
       .select('slug')
       .eq('id', cardId)
       .single();
 
-    if (error || !card?.slug) {
-      throw new Error('Impossible de trouver le slug de la carte');
-    }
+    if (error) throw error;
+    if (!card) throw new Error('Card not found');
 
-    // Create the URL for the business card using the slug
+    // Generate QR code with the correct URL format
     const cardUrl = `${window.location.origin}/c/${card.slug}`;
-    
-    // Use a free QR code generation service
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(cardUrl)}`;
-    
-    return qrCodeUrl;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(cardUrl)}`;
   } catch (error) {
     console.error('Error generating QR code:', error);
     throw error;

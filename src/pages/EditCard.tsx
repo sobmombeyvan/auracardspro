@@ -91,7 +91,16 @@ const EditCard = () => {
   
   const generateQRCode = async (cardId: string) => {
     try {
-      const cardUrl = `${window.location.origin}/card/${cardId}`;
+      const { data: card, error } = await supabase
+        .from('business_cards')
+        .select('slug')
+        .eq('id', cardId)
+        .single();
+
+      if (error) throw error;
+      if (!card) throw new Error('Card not found');
+
+      const cardUrl = `${window.location.origin}/c/${card.slug}`;
       const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(cardUrl)}`;
       setQrCode(qrCodeUrl);
     } catch (error) {
