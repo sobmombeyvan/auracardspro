@@ -103,20 +103,30 @@ const Dashboard = () => {
     }
   };
 
-  const handleShareCard = async (id: string) => {
-    const url = `${window.location.origin}/card/${id}`;
-    
+  const handleShareCard = async (cardId: string) => {
     try {
-      await navigator.clipboard.writeText(url);
+      const { data: card, error } = await supabase
+        .from('business_cards')
+        .select('slug')
+        .eq('id', cardId)
+        .single();
+
+      if (error) throw error;
+      if (!card) throw new Error('Carte non trouvée');
+
+      const shareUrl = `${window.location.origin}/c/${card.slug}`;
+      await navigator.clipboard.writeText(shareUrl);
+      
       toast({
-        title: "Lien copié",
-        description: "Le lien de votre carte a été copié dans le presse-papier",
+        title: "Lien copié !",
+        description: "Le lien de partage a été copié dans le presse-papiers.",
       });
     } catch (error) {
+      console.error('Error sharing card:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de copier le lien. Veuillez réessayer.",
+        description: "Impossible de partager la carte. Veuillez réessayer.",
       });
     }
   };
@@ -198,7 +208,7 @@ const Dashboard = () => {
                     <p className="text-white/70 text-sm mb-3">{card.title}</p>
                     
                     <div className="flex space-x-2 justify-between">
-                      <Link to={`/card/${card.id}`}>
+                      <Link to={`/c/${card.slug}`}>
                         <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
                           <Eye size={16} className="mr-1" /> Voir
                         </Button>

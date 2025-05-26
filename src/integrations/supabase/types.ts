@@ -45,6 +45,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           website: string | null
+          slug: string | null
         }
         Insert: {
           bio?: string | null
@@ -60,6 +61,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           website?: string | null
+          slug?: string | null
         }
         Update: {
           bio?: string | null
@@ -75,6 +77,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           website?: string | null
+          slug?: string | null
         }
         Relationships: []
       }

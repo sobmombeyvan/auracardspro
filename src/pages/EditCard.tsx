@@ -29,6 +29,7 @@ interface BusinessCard {
   published: boolean;
   created_at: string;
   updated_at: string;
+  slug: string;
 }
 
 interface SocialLink {
@@ -180,7 +181,21 @@ const EditCard = () => {
       setSaving(true);
       
       // Update card basic info
-      const updateData = {
+      const updateData: {
+        name: string;
+        title: string;
+        bio: string;
+        photo_url: string;
+        logo_url: string;
+        email: string;
+        phone: string;
+        location: string | null;
+        website: string;
+        published: boolean;
+        template: 'default' | 'minimal' | 'gradient' | 'dark';
+        updated_at: string;
+        slug?: string;
+      } = {
         name,
         title,
         bio,
@@ -194,6 +209,16 @@ const EditCard = () => {
         template: variant,
         updated_at: new Date().toISOString()
       };
+
+      // If the name has changed, update the slug
+      if (name) {
+        const baseSlug = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+        const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 8)}`;
+        updateData.slug = uniqueSlug;
+      }
 
       const { error: updateError } = await supabase
         .from('business_cards')

@@ -300,6 +300,13 @@ const CreateCard = () => {
       // Save card to Supabase
       const userId = session.session.user.id;
       
+      // Generate a slug from the name
+      const baseSlug = formData.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 8)}`;
+      
       // 1. Insert the card
       const { data: cardData, error: cardError } = await supabase
         .from('business_cards')
@@ -315,7 +322,8 @@ const CreateCard = () => {
           photo_url: formData.photo || '',
           logo_url: formData.logo || '',
           template: formData.variant,
-          published: true
+          published: true,
+          slug: uniqueSlug
         })
         .select()
         .single();

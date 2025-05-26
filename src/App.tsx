@@ -43,7 +43,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/create" element={<CreateCard />} />
-              <Route path="/card/:id" element={<ViewCard />} />
+              <Route path="/c/:slug" element={<ViewCard />} />
               <Route path="/edit/:id" element={<EditCard />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

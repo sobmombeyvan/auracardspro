@@ -159,11 +159,8 @@ export const BusinessCard = ({
             )}>Réseaux sociaux</h3>
             <div className="grid grid-cols-2 gap-2">
               {socials.map((social, index) => (
-                <a 
+                <div 
                   key={index}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={cn(
                     "flex items-center p-2 rounded-lg transition-all duration-300 transform hover:scale-105",
                     variant === 'minimal' 
@@ -185,7 +182,7 @@ export const BusinessCard = ({
                       variant === 'minimal' ? "text-gray-500" : "text-white/70"
                     )}>{social.network}</p>
                   </div>
-                </a>
+                </div>
               ))}
             </div>
           </div>
