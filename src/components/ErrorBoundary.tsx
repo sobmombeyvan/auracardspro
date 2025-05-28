@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from './ui/button';
+import { motion } from 'framer-motion';
 
 interface Props {
   children: React.ReactNode;
@@ -28,8 +29,18 @@ class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center space-y-4 p-8 rounded-lg glass-morphism border border-white/20">
-            <h2 className="text-2xl font-bold text-gradient">Oops! Something went wrong</h2>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-4 p-8 rounded-lg glass-morphism border border-white/20"
+          >
+            <motion.h2 
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="text-2xl font-bold text-gradient"
+            >
+              Oops! Something went wrong
+            </motion.h2>
             <p className="text-white/70">
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
@@ -39,7 +50,7 @@ class ErrorBoundary extends React.Component<Props, State> {
             >
               Refresh Page
             </Button>
-          </div>
+          </motion.div>
         </div>
       );
     }
@@ -48,4 +59,4 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 }
 
-export default ErrorBoundary; 
+export default ErrorBoundary;
